@@ -100,7 +100,11 @@
     
     // TODO: This may not work
     outputFramebuffer = [[GPUImageContext sharedFramebufferCache] fetchFramebufferForSize:layerPixelSize textureOptions:self.outputTextureOptions onlyTexture:YES];
-
+    
+    // Add this line, because GPUImageTwoInputFilter.m frametime updatedMovieFrameOppositeStillImage is YES, but the secondbuffer not lock
+    // 取桢不同步 submit by guzhipeng
+    [outputFramebuffer disableReferenceCounting];
+    
     glBindTexture(GL_TEXTURE_2D, [outputFramebuffer texture]);
     // no need to use self.outputTextureOptions here, we always need these texture options
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, (int)layerPixelSize.width, (int)layerPixelSize.height, 0, GL_BGRA, GL_UNSIGNED_BYTE, imageData);
@@ -113,8 +117,13 @@
         {
             NSInteger indexOfObject = [targets indexOfObject:currentTarget];
             NSInteger textureIndexOfTarget = [[targetTextureIndices objectAtIndex:indexOfObject] integerValue];
-            
+           
             [currentTarget setInputSize:layerPixelSize atIndex:textureIndexOfTarget];
+            
+            // add this line, because the outputFramebuffer is update above
+            // 更新UIelement的时候，同时更新outputFramebuffer, submit by guzhipeng
+            [currentTarget setInputFramebuffer:outputFramebuffer atIndex:textureIndexOfTarget];
+            
             [currentTarget newFrameReadyAtTime:frameTime atIndex:textureIndexOfTarget];
         }
     }    
