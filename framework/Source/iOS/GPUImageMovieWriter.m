@@ -275,12 +275,12 @@ NSString *const kGPUImageColorSwizzlingFragmentShaderString = SHADER_STRING
 {
     alreadyFinishedRecording = NO;
     startTime = kCMTimeInvalid;
-    runSynchronouslyOnContextQueue(_movieWriterContext, ^{
-        if (audioInputReadyCallback == NULL)
-        {
-            [assetWriter startWriting];
-        }
-    });
+//    runSynchronouslyOnContextQueue(_movieWriterContext, ^{
+//        if (audioInputReadyCallback == NULL)
+//        {
+//            [assetWriter startWriting];
+//        }
+//    });
     isRecording = YES;
     
     if (self.forCameraRecord) {
