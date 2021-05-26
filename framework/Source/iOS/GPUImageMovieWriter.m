@@ -275,12 +275,12 @@ NSString *const kGPUImageColorSwizzlingFragmentShaderString = SHADER_STRING
 {
     alreadyFinishedRecording = NO;
     startTime = kCMTimeInvalid;
-    runSynchronouslyOnContextQueue(_movieWriterContext, ^{
-        if (audioInputReadyCallback == NULL)
-        {
-            [assetWriter startWriting];
-        }
-    });
+//    runSynchronouslyOnContextQueue(_movieWriterContext, ^{
+//        if (audioInputReadyCallback == NULL)
+//        {
+//            [assetWriter startWriting];
+//        }
+//    });
     isRecording = YES;
     
     if (self.forCameraRecord) {
@@ -853,6 +853,7 @@ NSString *const kGPUImageColorSwizzlingFragmentShaderString = SHADER_STRING
             {
                 CVPixelBufferLockBaseAddress(pixel_buffer, 0);
                 
+                
                 GLubyte *pixelBufferData = (GLubyte *)CVPixelBufferGetBaseAddress(pixel_buffer);
                 glReadPixels(0, 0, videoSize.width, videoSize.height, GL_RGBA, GL_UNSIGNED_BYTE, pixelBufferData);
             }
@@ -880,6 +881,8 @@ NSString *const kGPUImageColorSwizzlingFragmentShaderString = SHADER_STRING
             }
             CVPixelBufferUnlockBaseAddress(pixel_buffer, 0);
             
+            [_pixelBufferdelegate pixelBufferDidFinishRendered: pixel_buffer];
+            
             previousFrameTime = frameTime;
             
             if (![GPUImageContext supportsFastTextureUpload])
@@ -889,6 +892,8 @@ NSString *const kGPUImageColorSwizzlingFragmentShaderString = SHADER_STRING
         };
         
         write();
+        
+        
         
         [inputFramebufferForBlock unlock];
         

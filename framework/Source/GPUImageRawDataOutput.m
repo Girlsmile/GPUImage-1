@@ -183,6 +183,8 @@
 
 - (void)newFrameReadyAtTime:(CMTime)frameTime atIndex:(NSInteger)textureIndex;
 {
+    
+    
     hasReadFromTheCurrentFrame = NO;
     
     if (_newFrameAvailableBlock != NULL)

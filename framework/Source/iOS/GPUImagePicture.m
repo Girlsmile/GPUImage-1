@@ -1,5 +1,12 @@
 #import "GPUImagePicture.h"
 
+@interface GPUImagePicture ()
+{
+    CMTime time;
+    NSTimeInterval actualTimeOfLastUpdate;
+}
+@end
+
 @implementation GPUImagePicture
 
 #pragma mark -
@@ -308,6 +315,54 @@
 - (void)processImage;
 {
     [self processImageWithCompletionHandler:nil];
+}
+
+- (void)processImageUseCurrentTime;
+{
+    if(CMTIME_IS_INVALID(time)) {
+        time = CMTimeMakeWithSeconds(0, 600);
+        actualTimeOfLastUpdate = [NSDate timeIntervalSinceReferenceDate];
+    } else {
+        NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
+        NSTimeInterval diff = now - actualTimeOfLastUpdate;
+        time = CMTimeAdd(time, CMTimeMakeWithSeconds(diff, 600));
+        actualTimeOfLastUpdate = now;
+    }
+
+    [self processImageWithCompletionHandlerUserCurrentTime:time after:nil];
+}
+
+- (BOOL)processImageWithCompletionHandlerUserCurrentTime:(CMTime)frameTime after: (void (^)(void))completion;
+{
+    hasProcessedImage = YES;
+    
+    //    dispatch_semaphore_wait(imageUpdateSemaphore, DISPATCH_TIME_FOREVER);
+    
+    if (dispatch_semaphore_wait(imageUpdateSemaphore, DISPATCH_TIME_NOW) != 0)
+    {
+        return NO;
+    }
+    
+    runAsynchronouslyOnVideoProcessingQueue(^{
+        for (id<GPUImageInput> currentTarget in targets)
+        {
+            NSInteger indexOfObject = [targets indexOfObject:currentTarget];
+            NSInteger textureIndexOfTarget = [[targetTextureIndices objectAtIndex:indexOfObject] integerValue];
+            
+            [currentTarget setCurrentlyReceivingMonochromeInput:NO];
+            [currentTarget setInputSize:pixelSizeOfImage atIndex:textureIndexOfTarget];
+            [currentTarget setInputFramebuffer:outputFramebuffer atIndex:textureIndexOfTarget];
+            [currentTarget newFrameReadyAtTime:frameTime atIndex:textureIndexOfTarget];
+        }
+        
+        dispatch_semaphore_signal(imageUpdateSemaphore);
+        
+        if (completion != nil) {
+            completion();
+        }
+    });
+    
+    return YES;
 }
 
 - (BOOL)processImageWithCompletionHandler:(void (^)(void))completion;

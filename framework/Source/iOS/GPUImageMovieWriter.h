@@ -50,6 +50,9 @@ extern NSString *const kGPUImageColorSwizzlingFragmentShaderString;
 @property(nonatomic, assign, getter = isPaused) BOOL paused;
 @property(nonatomic, retain) GPUImageContext *movieWriterContext;
 
+//pixbuffer回调delegate，发送推流
+@property(nonatomic, assign) id<PixelBufferDelegate> pixelBufferdelegate;
+
 // Initialization and teardown
 - (id)initWithMovieURL:(NSURL *)newMovieURL size:(CGSize)newSize;
 - (id)initWithMovieURL:(NSURL *)newMovieURL size:(CGSize)newSize fileType:(NSString *)newFileType outputSettings:(NSDictionary *)outputSettings;
